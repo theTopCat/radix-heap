@@ -131,6 +131,15 @@ class radix_heap {
     return encoder_type::decode(last_);
   }
 
+  key_type min() const {
+    assert(size_ > 0);
+
+    size_t i;
+    for (i = 0; buckets_[i].empty(); ++i);
+
+    return buckets_min_[i];
+  }
+
   void pop() {
     pull();
     buckets_[0].pop_back();
@@ -224,6 +233,15 @@ class pair_radix_heap {
     buckets_[k].emplace_back(std::piecewise_construct,
                              std::forward_as_tuple(x), std::forward_as_tuple(args...));
     buckets_min_[k] = std::min(buckets_min_[k], x);
+  }
+
+  key_type min_key() const {
+    assert(size_ > 0);
+
+    size_t i;
+    for (i = 0; buckets_[i].empty(); ++i);
+
+    return buckets_min_[i];
   }
 
   key_type top_key() {
