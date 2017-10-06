@@ -137,7 +137,7 @@ class radix_heap {
     size_t i;
     for (i = 0; buckets_[i].empty(); ++i);
 
-    return buckets_min_[i];
+    return encoder_type::decode(buckets_min_[i]);
   }
 
   void pop() {
@@ -241,7 +241,7 @@ class pair_radix_heap {
     size_t i;
     for (i = 0; buckets_[i].empty(); ++i);
 
-    return buckets_min_[i];
+    return encoder_type::decode(buckets_min_[i]);
   }
 
   key_type top_key() {
