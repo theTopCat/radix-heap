@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 namespace radix_heap {
 namespace internal {
@@ -201,6 +202,7 @@ class pair_radix_heap {
   typedef ValueType value_type;
   typedef EncoderType encoder_type;
   typedef typename encoder_type::unsigned_key_type unsigned_key_type;
+  typedef typename std::vector<std::pair<key_type, value_type> >::const_iterator value_iterator;
 
   pair_radix_heap() : size_(0), last_(), buckets_() {
     buckets_min_.fill(std::numeric_limits<unsigned_key_type>::max());
@@ -252,6 +254,11 @@ class pair_radix_heap {
   value_type &top_value() {
     pull();
     return buckets_[0].back().second;
+  }
+
+  std::tuple<value_iterator, value_iterator> top_values() {
+    pull();
+    return std::forward_as_tuple(buckets_[0].cbegin(), buckets_[0].cend());
   }
 
   void pop() {
