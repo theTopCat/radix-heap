@@ -66,11 +66,13 @@ It can handle signed integers (char, short, int, long, longlong), unsigned integ
 
 |　Return value | Name    | Description           |
 | ------------- | ------------- | ---- |
-| bool | empty();   | `true` if empty. |
-| size_t | size();   | The number of keys. |
-| *Key type* | top(); | The minimum key. |
+| bool | empty() const;   | `true` if empty. |
+| size_t | size() const;   | The number of keys. |
+| *Key type* | top(); | The minimum key. Cached but enable monotone restrictions. |
+| *Key type* | min() const; | The minimum key. Calculated but not enable monotone restrictions. |
+| *Key type* | next() const; | The next key after minimum key. Calculated but not enable monotone restrictions. |
 | void | push(key); | Add a key.       |
-| void | pop(); | Remove the minimum key. |
+| void | pop(); | Remove the minimum key. (enable monotone restrictions)|
 | void | swap(another radix heap); | Swap the contents.      |
 
 
@@ -78,17 +80,24 @@ It can handle signed integers (char, short, int, long, longlong), unsigned integ
 
 It takes two template arguments: the types of keys (numbers) and values (anything that can be moved),
 e.g., `pair_radix_heap<int, std::string>` or `pair_radix_heap<double, std::tuple<int, int, int>>`. Its member functions are as follows:
+There is one additional optional template argument "bool __FIFO__" (default false) which allow pop-ing same key values in same sequence
+as were added to heap ( loosing some pop() performance ).
+
 
 |　Return value | Name    | Description           |
 | ------------- | ------------- | ---- |
-| bool | empty();   | `true` if empty. |
-| size_t | size();   | The number of pairs. |
-| *Key type* | top_key(); | The minimum key. |
-| *Value type* | top_value(); | The value of a pair with the minimum key. |
+| bool | empty() const;   | `true` if empty. |
+| size_t | size() const;   | The number of pairs. |
+| *Key type* | top_key(); | The minimum key. Cached but enable monotone restrictions.|
+| *Value type* | top_value(); | The value of a pair with the minimum key. Cached but enable monotone restrictions.|
+| *Key type* | min_key() const; | The minimum key. Calculated but not enable monotone restrictions |
+| *Key type* | next_key() const; | The next key after minimum key. Calculated but not enable monotone restrictions. |
 | void | push(key, value); | Add a pair.       |
 | void | emplace(key, ...); | Construct and add a pair in place. |
-| void | pop(); | Remove a pair with the minimum key. |
+| void | pop(); | Remove a pair with the minimum key. (enable monotone restrictions)|
 | void | swap(another radix heap); | Swap the contents.       |
+
+
 
 
 ## Reference

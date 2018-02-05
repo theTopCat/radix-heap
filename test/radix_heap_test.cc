@@ -68,6 +68,8 @@ TYPED_TEST(radix_heap_test_all_types, trivial) {
 
   ASSERT_FALSE(h.empty());
   ASSERT_EQ(2, h.size());
+  ASSERT_EQ(0, h.min());
+  ASSERT_EQ(10, h.next());
   ASSERT_EQ(0, h.top());
   h.pop();
 
@@ -78,7 +80,9 @@ TYPED_TEST(radix_heap_test_all_types, trivial) {
   h.push(5);
   ASSERT_FALSE(h.empty());
   ASSERT_EQ(3, h.size());
+  ASSERT_EQ(5, h.min());
   ASSERT_EQ(5, h.top());
+  ASSERT_EQ(8, h.next());
 
   h.clear();
   ASSERT_TRUE(h.empty());
@@ -87,7 +91,27 @@ TYPED_TEST(radix_heap_test_all_types, trivial) {
   h.push(1);
   ASSERT_FALSE(h.empty());
   ASSERT_EQ(1, h.size());
+  ASSERT_EQ(1, h.min());
   ASSERT_EQ(1, h.top());
+}
+
+TYPED_TEST(radix_heap_test_all_types, trivial_next) {
+  radix_heap::radix_heap<TypeParam> h;
+  ASSERT_TRUE(h.empty());
+  ASSERT_EQ(0, h.size());
+
+  h.push(10);
+  h.push(10);
+  h.push(15);
+
+  ASSERT_EQ(10, h.min());
+  ASSERT_EQ(10, h.next());
+  ASSERT_EQ(10, h.top());
+  ASSERT_EQ(10, h.next());
+  h.pop();
+  ASSERT_EQ(10, h.min());
+  ASSERT_EQ(15, h.next());
+
 }
 
 TYPED_TEST(radix_heap_test_all_types, extreme1) {
@@ -98,14 +122,17 @@ TYPED_TEST(radix_heap_test_all_types, extreme1) {
   h.push(numeric_limits<TypeParam>::lowest());
 
   ASSERT_EQ(numeric_limits<TypeParam>::lowest(), h.top());
+  ASSERT_EQ(numeric_limits<TypeParam>::lowest(), h.min());
   h.pop();
 
   ASSERT_EQ(0, h.top());
   h.pop();
 
+  ASSERT_EQ(numeric_limits<TypeParam>::max(), h.next());
   ASSERT_EQ(5, h.top());
   h.pop();
 
+  ASSERT_EQ(numeric_limits<TypeParam>::max(), h.min());
   ASSERT_EQ(numeric_limits<TypeParam>::max(), h.top());
   h.pop();
 
@@ -142,15 +169,27 @@ TYPED_TEST(radix_heap_test_all_types, copy_and_swap) {
   h1.push(1);
   h1.push(10);
   h1.push(5);
+
+  ASSERT_EQ(static_cast<TypeParam>(1), h1.min());
+  ASSERT_EQ(static_cast<TypeParam>(5), h1.next());
   h1.pop();
+  ASSERT_EQ(static_cast<TypeParam>(5), h1.min());
+  ASSERT_EQ(static_cast<TypeParam>(8), h1.next());
 
   heap_type h2 = h1;
   ASSERT_EQ(3, h2.size());
-  ASSERT_EQ(5, h2.top());
+  ASSERT_EQ(static_cast<TypeParam>(5), h2.top());
+  ASSERT_EQ(static_cast<TypeParam>(5), h2.min());
+  ASSERT_EQ(static_cast<TypeParam>(8), h2.next());
   h2.pop();
-  ASSERT_EQ(8, h2.top());
+  ASSERT_EQ(static_cast<TypeParam>(10), h2.next());
+  ASSERT_EQ(static_cast<TypeParam>(8), h2.min());
+  ASSERT_EQ(static_cast<TypeParam>(8), h2.top());
+
   h2.pop();
-  ASSERT_EQ(10, h2.top());
+  ASSERT_EQ(static_cast<TypeParam>(10), h2.top());
+  ASSERT_EQ(static_cast<TypeParam>(10), h2.min());
+  ASSERT_EQ(static_cast<TypeParam>(10), h2.next());
   h2.pop();
   ASSERT_TRUE(h2.empty());
 
@@ -159,18 +198,18 @@ TYPED_TEST(radix_heap_test_all_types, copy_and_swap) {
   h1.swap(h3);
   ASSERT_EQ(1, h1.size());
   ASSERT_EQ(3, h3.size());
-  ASSERT_EQ(100, h1.top());
+  ASSERT_EQ(static_cast<TypeParam>(100), h1.top());
   h1.pop();
   ASSERT_TRUE(h1.empty());
 
   h3.push(20);
   h3.pop();
   heap_type h4(std::move(h3));
-  ASSERT_EQ(8, h4.top());
+  ASSERT_EQ(static_cast<TypeParam>(8), h4.top());
   h4.pop();
-  ASSERT_EQ(10, h4.top());
+  ASSERT_EQ(static_cast<TypeParam>(10), h4.top());
   h4.pop();
-  ASSERT_EQ(20, h4.top());
+  ASSERT_EQ(static_cast<TypeParam>(20), h4.top());
   h4.pop();
   ASSERT_TRUE(h4.empty());
 }
@@ -228,9 +267,39 @@ TEST(pair_radix_heap_test, trivial) {
   ASSERT_EQ("huga", h.top_value());
 
   h.pop();
-  ASSERT_EQ(0, h.size());
+  ASSERT_EQ(static_cast<size_t>(0), h.size());
   ASSERT_TRUE(h.empty());
 }
+
+TEST(pair_radix_heap_test, trivial_stable) {
+  radix_heap::pair_radix_heap<double, string, true> h;
+
+  h.push(100.0, "hoge");
+  h.push(100.0, "piyo");
+  h.push(100.0, "huga");
+
+  ASSERT_EQ( 100.0, h.top_key());
+  ASSERT_EQ("hoge", h.top_value());
+
+  h.pop();
+  ASSERT_EQ(100.0, h.top_key());
+  ASSERT_EQ("piyo", h.top_value());
+
+  h.push(100, "nya");
+
+  h.pop();
+  ASSERT_EQ(100.0, h.top_key());
+  ASSERT_EQ("huga", h.top_value());
+
+  h.pop();
+  ASSERT_EQ(100.0, h.top_key());
+  ASSERT_EQ("nya", h.top_value());
+
+  h.pop();
+  ASSERT_EQ(static_cast<size_t>(0), h.size());
+  ASSERT_TRUE(h.empty());
+}
+
 
 TEST(pair_radix_heap_test_double_string, emplace) {
   radix_heap::pair_radix_heap<double, string> h;
@@ -241,7 +310,8 @@ TEST(pair_radix_heap_test_double_string, emplace) {
   ASSERT_EQ("aaaaaaaaaa", h.top_value());
 }
 
-TEST(pair_radix_heap_test_int_string, large) {
+TEST(pair_radix_heap_test_int_string, large)
+{
   const int kNumTrials = 10;
   const int kNumPop = 10000;
   const int kMaxDiff = 1000;
@@ -275,4 +345,24 @@ TEST(pair_radix_heap_test_int_string, large) {
       last = top_key;
     }
   }
+}
+
+struct CPrep {
+  inline bool operator ( ) (const std::string &value) const
+  {
+    return value  == "a";
+  }
+};
+
+TEST(pair_radix_heap_test_double_string, remove_if) {
+  radix_heap::pair_radix_heap<double, string> h;
+  h.push(20, "hoge");
+  h.push(30, "a");
+  h.push(40, "a");
+
+  ASSERT_EQ("hoge", h.top_value());
+  h.pop();
+  ASSERT_EQ("a", h.top_value());
+  h.remove_if(CPrep());
+  ASSERT_TRUE(h.empty());
 }
